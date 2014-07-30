@@ -19,12 +19,7 @@ from sklearn.cross_validation import cross_val_score
 
 
 
-def grid_search(alphas):
-    results = []
-    for alpha in alphas:
-        clf = MultinomialNB(alpha)
-        results.append(np.mean(cross_val_score(clf, data.data, data.target)))
-    return results
+
 
 
 def create_plot_curve():
@@ -33,18 +28,24 @@ def create_plot_curve():
     lview = clients.load_balanced_view()
     lview.block = True
     alphas = [1E-4, 1E-3, 1E-2, 1E-1]
-    lview.apply(data)
 
-    res = lview.map(grid_search(alphas), range(10))
+    def grid_search():
+        results = []
+        for alpha in alphas:
+            clf = MultinomialNB(alpha)
+            results.append(np.mean(cross_val_score(clf, data.data, data.target)))
+        return results
+
+    res = lview.map(grid_search(), range(10))
     return res
+
 
 if __name__ == '__main__':
     results = create_plot_curve()
-    best_result = (0, 0)
-    for result in results:
-        if result[1] > best_result[1]:
-            best_result = result
-    print "\nThe best result is:"
-    print "alpha = {}".format(best_result[0])
-    print "score = {}%".format(round(best_result[1] * 100, 2))
+    best_ = (0.0)
+    for res in results:
+        if res[1] > best_[1]:
+            best_ = res
+    print "best result", best_[0], best_[1]
+
 
